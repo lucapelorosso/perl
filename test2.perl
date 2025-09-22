@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # Programma area-01.pl
-# Scritto da ... 
+# Scritto da Luca Pelorosso
 #
 # Programma per trovare l'area di un rettangolo.
 
