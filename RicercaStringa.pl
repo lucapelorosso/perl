@@ -35,7 +35,7 @@ find(sub {
     }
 
     # Verifica se il testo è presente nel file
-    if ($contenuto_file =~ /$testo_da_cercare/) {
+    if ($contenuto_file =~ /$testo_da_cercare/i) {
         print "Trovato \"$testo_da_cercare\" nel file: $File::Find::name\n";
    
 
