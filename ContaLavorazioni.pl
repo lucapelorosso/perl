@@ -1,11 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-# use GiorniLavorativi qw(giorni_lavorativi_italia);
+# Libreria per il calcolo delle date
 use Date::Calc qw(Day_of_Week Add_Delta_Days Delta_Days);
 
-
-# sb routine per calcolare giorni lavorativi tra due date: sabato e domenica non lavorativi
+# sb routine per calcolare giorni lavorativi tra due date: sabato e domenica non lavorativi, calcoliamo anche i giorni di festività nazionali italiani
 sub giorni_lavorativi_italia {
     my ($start_date, $end_date) = @_;
 
@@ -34,8 +33,8 @@ sub giorni_lavorativi_italia {
             "$y-12-08" => 1,  # Immacolata Concezione
             "$y-12-25" => 1,  # Natale
             "$y-12-26" => 1,  # Santo Stefano
-            "$y-01-01" => 1,  # Pasqua
-            "$y-01-01" => 1,  # Pasquetta
+            "$y-04-20" => 1,  # Pasqua --> da modificare ogni anno
+            "$y-04-25" => 1,  # Pasquetta --> da modificare ogni anno
         );
         # Conta solo giorni lun-ven che non sono festività
         $workdays++ if $dow < 6 && !exists $holidays{"$y-$m-$d"};
@@ -55,6 +54,7 @@ my $countAccettati = 0;
 my $countConsegnati = 0;
 my $countFouriSla = 0;
 my $countInSla = 0;
+my $giorniPoste = 5; 
 
 my $DataAccettazione;
 my $DataConsegna;
@@ -89,26 +89,20 @@ while (<$fh>) {
     #print "Ultima data accettazione: $DataAccettazione \n";
     #print "Ultima data Consegna $DataConsegna \n";
     
-    #if (defined $campi[4] && $campi[4] ne '' && defined $campi[3] && $campi[3] ne ''  ) {
+    # verifico che la data di accettazione e la data di consegna siano entrambe valorizzate
     if (defined $DataConsegna && $DataConsegna ne '' && defined $DataAccettazione && $DataAccettazione ne ''  ) {     
-         #my $giorni = giorni_lavorativi_italia("2025-08-27", "2025-09-03");
-         my $giorni = giorni_lavorativi_italia($DataAccettazione, $DataConsegna);
-         # tolgo un giorno perchè devo calcolare dal giorno dopo l'accettazione;
-         my $giorni = $giorni -1;
-         #print "Giorni lavorativi in Italia: $giorni\n";
 
-         # conto se il delta di giorni tra il consegnato e l'accettazione supera i 5 giorni concordati con poste italiane
-         if ($giorni > 5) {
-             $countFouriSla = $countFouriSla +1;
+        # determino quanti sono i giorni lavorativi presenti tra la data di accettazione e la data di Consegna
+        my $giorni = giorni_lavorativi_italia($DataAccettazione, $DataConsegna);
+        # tolgo un giorno perchè devo calcolare dal giorno dopo l'accettazione;
+        $giorni = $giorni -1;
+        #print "Giorni lavorativi in Italia: $giorni\n";
+
+        # conto se il delta di giorni tra il consegnato e l'accettazione supera i 5 giorni concordati con poste italiane
+        if ($giorni > $giorniPoste) {
+            $countFouriSla = $countFouriSla +1;
          }
-         #else {
-          # $countInSla = $countInSla +1;
-         #}
-         
-
-
     }
-
 }
 $countInSla =  $countConsegnati - $countFouriSla;
 print "Accettati: $countAccettati , Consegnati:  $countConsegnati \n";
