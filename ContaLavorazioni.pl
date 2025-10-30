@@ -17,6 +17,8 @@ sub giorni_lavorativi_italia {
 
     my $workdays = 0;
     my ($y, $m, $d) = ($start_year, $start_month, $start_day);
+   
+
 
     for my $i (0..$total_days) {
         my $dow = Day_of_Week($y, $m, $d);  # 1 = lunedì, 7 = domenica
@@ -56,21 +58,37 @@ my $countFouriSla = 0;
 my $countMancaTracciatura = 0;
 my $countInSla = 0;
 my $giorniPoste = 5; 
-
+my $giorni = 0;
 my $DataAccettazione;
 my $DataConsegna;
+my $lenAccatazione=0;
+my $lenConsegna=0;
+
 
 while (my $riga = <$fh>) {
    chomp $riga;   
    # my @campi = split /\|/, $_, -1;   # split sui |, conservando i vuoti
     my @campi = split /;/, $riga;   # dividi su uno o più spazi
+
+
     # esempio: controllo se il terzo campo (colonna 4) è valorizzato: data di accettazione;
+    # print "Linea: $riga \n";
+    # print "Data Accettazione A : $campi[3] \n";
+    # print "Data Consegna A: $campi[4] \n";
+
+    $lenAccatazione=0;
+    $lenConsegna=0;
+
     if (defined $campi[3] && $campi[3] ne '') {
        # print "Campo valorizzato nella riga: $_\n";
        $countAccettati = $countAccettati + 1;
-
-
-       if ($campi[3] =~ /^(\d{2})(\d{2})(\d{4})$/) {
+       $lenAccatazione = length($campi[3]);
+       # print "Lunghezza data accettazione: $lenAccatazione \n";
+       $DataAccettazione = $campi[3];
+       if ( $lenAccatazione==7) {
+           $DataAccettazione="0$campi[3]";
+       }
+       if ( $DataAccettazione =~ /^(\d{2})(\d{2})(\d{4})$/) {
          my ($day, $month, $year) = ($1, $2, $3);
          $day = sprintf("%02d", $day);
          $month   = sprintf("%02d", $month);
@@ -80,15 +98,20 @@ while (my $riga = <$fh>) {
        }
     }
 
-    # print "Data Accettazione A : $campi[3] \n";
-    # print "Data Consegna A: $campi[4] \n";
+
 
     # esempio: controllo se il terzo campo (colonna 5) è valorizzato: data di consegna;
     if (defined $campi[4] && $campi[4] ne '') {
        # print "Campo valorizzato nella riga: $_\n";
        $countConsegnati = $countConsegnati + 1;
-      
-       if ($campi[4] =~ /^(\d{2})(\d{2})(\d{4})$/) {
+       
+       $lenConsegna = length($campi[4]);
+       $DataConsegna = $campi[4];
+       # print "Lunghezza data consegna: $lenConsegna \n";
+       if ($lenConsegna==7) {
+          $DataConsegna="0$campi[4]";
+       }  
+       if ($DataConsegna =~ /^(\d{2})(\d{2})(\d{4})$/) {
         
          my ($day, $month, $year) = ($1, $2, $3);
          $day = sprintf("%02d", $day);
@@ -98,17 +121,33 @@ while (my $riga = <$fh>) {
         }
         else { 
                $countMancaTracciatura = $countMancaTracciatura +1;
+               $DataConsegna = $campi[4];
                # print "Data Consegna non valorizzata \n";      
             }            
-    }   
+    }
+    else { 
+        $countMancaTracciatura = $countMancaTracciatura +1;
+         # print "Data Consegna non valorizzata \n";     
+         $DataConsegna = $campi[4]; 
+    }
+
+    # print "Data Accettazione B : $DataAccettazione \n";
+    # print "Data Consegna B: $DataConsegna \n";
+
     # verifico che la data di accettazione e la data di consegna siano entrambe valorizzate
     if (defined $DataConsegna && $DataConsegna ne '' && defined $DataAccettazione && $DataAccettazione ne ''  ) {     
 
         # determino quanti sono i giorni lavorativi presenti tra la data di accettazione e la data di Consegna
-        my $giorni = giorni_lavorativi_italia($DataAccettazione, $DataConsegna);
+
+        if ("$DataAccettazione" eq  "$DataConsegna") {
+         $giorni = 2;
+        }
+        else { 
+          $giorni = giorni_lavorativi_italia($DataAccettazione, $DataConsegna);
+        }
         # tolgo un giorno perchè devo calcolare dal giorno dopo l'accettazione;
         $giorni = $giorni -1;
-        # print "Giorni lavorativi in Italia: $giorni\n";
+        #print "Giorni lavorativi in Italia: $giorni\n";
 
         # conto se il delta di giorni tra il consegnato e l'accettazione supera i 5 giorni concordati con poste italiane
         if ($giorni > $giorniPoste) {
