@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 
-my $col = 3;   # colonna da usare (default = 1)
+my $col = 3;   # colonna da usare (Contatore da 1)
 GetOptions("col=i" => \$col) or die "Uso: $0 [--col=N] file\n";
 die "Errore: --col deve essere >= 1\n" if $col < 1;
 

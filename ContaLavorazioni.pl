@@ -53,16 +53,17 @@ open my $fh, '<', $file or die "Non posso aprire $file: $!\n";
 my $countAccettati = 0;
 my $countConsegnati = 0;
 my $countFouriSla = 0;
+my $countMancaTracciatura = 0;
 my $countInSla = 0;
 my $giorniPoste = 5; 
 
 my $DataAccettazione;
 my $DataConsegna;
 
-while (<$fh>) {
-    chomp;
-    my @campi = split /\|/, $_, -1;   # split sui |, conservando i vuoti
-
+while (my $riga = <$fh>) {
+   chomp $riga;   
+   # my @campi = split /\|/, $_, -1;   # split sui |, conservando i vuoti
+    my @campi = split /;/, $riga;   # dividi su uno o più spazi
     # esempio: controllo se il terzo campo (colonna 4) è valorizzato: data di accettazione;
     if (defined $campi[3] && $campi[3] ne '') {
        # print "Campo valorizzato nella riga: $_\n";
@@ -71,24 +72,35 @@ while (<$fh>) {
 
        if ($campi[3] =~ /^(\d{2})(\d{2})(\d{4})$/) {
          my ($day, $month, $year) = ($1, $2, $3);
+         $day = sprintf("%02d", $day);
+         $month   = sprintf("%02d", $month);
          $DataAccettazione  = "$year-$month-$day";
+         # print "Data accettazione: $DataAccettazione \n";
 
        }
     }
+
+    # print "Data Accettazione A : $campi[3] \n";
+    # print "Data Consegna A: $campi[4] \n";
+
     # esempio: controllo se il terzo campo (colonna 5) è valorizzato: data di consegna;
     if (defined $campi[4] && $campi[4] ne '') {
        # print "Campo valorizzato nella riga: $_\n";
        $countConsegnati = $countConsegnati + 1;
-       
+      
        if ($campi[4] =~ /^(\d{2})(\d{2})(\d{4})$/) {
+        
          my ($day, $month, $year) = ($1, $2, $3);
+         $day = sprintf("%02d", $day);
+         $month   = sprintf("%02d", $month);         
          $DataConsegna  = "$year-$month-$day";
-       
+         # print "Data Consegna $campi[4] \n";
         }
-    }    
-    #print "Ultima data accettazione: $DataAccettazione \n";
-    #print "Ultima data Consegna $DataConsegna \n";
-    
+        else { 
+               $countMancaTracciatura = $countMancaTracciatura +1;
+               # print "Data Consegna non valorizzata \n";      
+            }            
+    }   
     # verifico che la data di accettazione e la data di consegna siano entrambe valorizzate
     if (defined $DataConsegna && $DataConsegna ne '' && defined $DataAccettazione && $DataAccettazione ne ''  ) {     
 
@@ -96,16 +108,18 @@ while (<$fh>) {
         my $giorni = giorni_lavorativi_italia($DataAccettazione, $DataConsegna);
         # tolgo un giorno perchè devo calcolare dal giorno dopo l'accettazione;
         $giorni = $giorni -1;
-        #print "Giorni lavorativi in Italia: $giorni\n";
+        # print "Giorni lavorativi in Italia: $giorni\n";
 
         # conto se il delta di giorni tra il consegnato e l'accettazione supera i 5 giorni concordati con poste italiane
         if ($giorni > $giorniPoste) {
             $countFouriSla = $countFouriSla +1;
-         }
-    }
+        }
+    }     
 }
 $countInSla =  $countConsegnati - $countFouriSla;
-print "Accettati: $countAccettati , Consegnati:  $countConsegnati \n";
+print "Accettati: $countAccettati \n";
+print "Consegnati:  $countConsegnati \n";
+print "Manca Tracciatura: $countMancaTracciatura \n";
 print "Consegnati in sla: $countInSla \n";
 print "Consegnati fuori sla: $countFouriSla \n";
 close $fh;
