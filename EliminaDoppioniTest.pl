@@ -49,5 +49,5 @@ while (<>) {
 
 # Stampa solo i record con valore massimo
 foreach my $k (keys %max_record) {
-    printf $max_record{$k}{line}, "\n";
+    print "$max_record{$k}{line} \n";
 }
