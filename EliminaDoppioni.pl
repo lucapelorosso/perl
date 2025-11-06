@@ -15,7 +15,7 @@ while (<>) {
     my $key = $fields[2] // ''; # primo campo = chiave
     #my $key   = $fields[2];   # primo campo = chiave
     my $value = $fields[4] // ''; # secondo campo = valore
-
+    my $dataConsegna;
     
     if (defined $fields[4] && $fields[4] ne '') {
        $lenConsegna = length($fields[4]);
@@ -23,6 +23,7 @@ while (<>) {
 
        if ($lenConsegna==7) {
           $value="0$fields[4]";
+          # print "Lunghezza sette: $value\n";
        }  
        if ($value =~ /^(\d{2})(\d{2})(\d{4})$/) {
         
@@ -31,23 +32,28 @@ while (<>) {
          $month   = sprintf("%02d", $month);         
          $value  = "$year-$month-$day";
          # print "Data Consegna $campi[4] \n";
-        }       
+        }    
+        # formatto in numerico la stringa data;
+        ($dataConsegna = $value) =~ s/-//g;    
     }
     else { 
          $day    = "01";
          $month  = "01";
          $year   = "1900";
          $value  = "$year-$month-$day";
+         # formatto in numerico la stringa data;
+         ($dataConsegna = $value) =~ s/-//g; 
+         # print "Consegna vuote: $value\n";
     }
     # Se non esiste ancora la chiave o il nuovo valore è maggiore, aggiorna
     if ( !exists $max_record{$key} || $value > $max_record{$key}{value} ) {
-        $max_record{$key} = { value => $value, line => $_ };
+         # $max_record{$key} = { value => $value, line => $_ };
+         $max_record{$key} = { value => $dataConsegna, line => $_ };
     }
     # printf "Data Consegna: $value \n";
     # printf "Data Consegna file: $fields[4] \n";
 }
-
 # Stampa solo i record con valore massimo
-foreach my $k (keys %max_record) {
+ foreach my $k (keys %max_record) {
     print "$max_record{$k}{line} \n";
 }
