@@ -16,6 +16,8 @@ while (<>) {
     #my $key   = $fields[2];   # primo campo = chiave
     my $value = $fields[4] // ''; # secondo campo = valore
     my $dataConsegna;
+    # formatto in numerico la stringa data;
+    ($dataConsegna = $value) =~ s/-//g;    
     
     if (defined $fields[4] && $fields[4] ne '') {
        $lenConsegna = length($fields[4]);
@@ -46,7 +48,8 @@ while (<>) {
          # print "Consegna vuote: $value\n";
     }
     # Se non esiste ancora la chiave o il nuovo valore è maggiore, aggiorna
-    if ( !exists $max_record{$key} || $value > $max_record{$key}{value} ) {
+    #if ( !exists $max_record{$key} || $value > $max_record{$key}{value} ) { # originale
+    if ( !exists $max_record{$key} || $dataConsegna > $max_record{$key}{value} ) {
          # $max_record{$key} = { value => $value, line => $_ };
          $max_record{$key} = { value => $dataConsegna, line => $_ };
     }

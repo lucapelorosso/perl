@@ -131,14 +131,15 @@ while (my $riga = <$fh>) {
          $DataConsegna = $campi[4]; 
     }
 
-    print "Data Accettazione B : $DataAccettazione \n";
-    print "Data Consegna B: $DataConsegna \n";  
+    # print "Data Accettazione B : $DataAccettazione \n";
+    # print "Data Consegna B: $DataConsegna \n";  
 
     # verifico che la data di accettazione e la data di consegna siano entrambe valorizzate
     if (defined $DataConsegna && $DataConsegna ne "" && defined $DataAccettazione && $DataAccettazione ne ""  ) {     
-        print "Date entrambe valorizzate \n";
+        # print "Date entrambe valorizzate \n";
         # determino quanti sono i giorni lavorativi presenti tra la data di accettazione e la data di Consegna
-
+        # print "Data Consegna: $DataConsegna";
+        # print "Data Accettazione: $DataAccettazione";
         if ("$DataAccettazione" eq  "$DataConsegna") {
             print "Date uguali \n";
             $giorni = 2;
@@ -148,15 +149,14 @@ while (my $riga = <$fh>) {
         }
         # tolgo un giorno perchè devo calcolare dal giorno dopo l'accettazione;
         $giorni = $giorni -1;
-        print "Giorni lavorativi in Italia: $giorni\n";     
-        #print "Giorni lavorativi in Italia: $giorni\n";
+        # print "Giorni lavorativi in Italia: $giorni\n";     
         # conto se il delta di giorni tra il consegnato e l'accettazione supera i 5 giorni concordati con poste italiane
-        if ($giorni <= $giorniPoste) {
-            print "Consegna in Sla \n";
-        } else {
-            print "Consegna Fuori Sla \n";
-            $countFouriSla = $countFouriSla +1;
-           }
+         if ($giorni <= $giorniPoste) {
+        #     print "Consegna in Sla \n";
+         } else {
+        #     print "Consegna Fuori Sla \n";
+             $countFouriSla = $countFouriSla +1;
+            }
     }
 
 }
